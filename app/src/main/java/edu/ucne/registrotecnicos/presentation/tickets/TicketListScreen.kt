@@ -1,5 +1,6 @@
-package edu.ucne.registrotecnicos.presentation.tecnicos
+package edu.ucne.registrotecnicos.presentation.tickets
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,14 +18,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import edu.ucne.registrotecnicos.data.local.entities.TecnicoEntity
+import edu.ucne.registrotecnicos.data.local.entities.TicketEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TecnicoListScreen(
-    tecnicoList: List<TecnicoEntity>,
-    createTecnico: () -> Unit,
+fun TicketListScreen(
+    ticketList: List<TicketEntity>,
+    createTicket: () -> Unit,
     goToMenu: () -> Unit,
+    goToTicket: (Int) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -35,7 +37,7 @@ fun TecnicoListScreen(
             androidx.compose.material3.CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Lista de Técnicos",
+                        text = "Lista de Tickets",
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -48,10 +50,13 @@ fun TecnicoListScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    TecnicoHeaderRow()
+                    TicketHeaderRow()
                 }
-                items(tecnicoList) { tecnico ->
-                    TecnicoRow(tecnico)
+                items(ticketList) { ticket ->
+                    TicketRow(
+                        ticket = ticket,
+                        goToTicket = { ticket.ticketId?.let { it1 -> goToTicket(it1) } }
+                    )
                 }
             }
         }
@@ -64,45 +69,49 @@ fun TecnicoListScreen(
             Text(text = "Menú Principal")
         }
         OutlinedButton(
-            onClick = { createTecnico() },
+            onClick = { createTicket() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
-            Text(text = "Nuevo Técnico")
+            Text(text = "Nuevo Ticket")
         }
     }
 }
 
 @Composable
-private fun TecnicoHeaderRow() {
+private fun TicketHeaderRow() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(modifier = Modifier.weight(1f), text = "ID", style = MaterialTheme.typography.bodyLarge)
-        Text(modifier = Modifier.weight(2f), text = "Nombre", style = MaterialTheme.typography.bodyLarge)
-        Text(modifier = Modifier.weight(1f), text = "Sueldo", style = MaterialTheme.typography.bodyLarge)
+        Text(modifier = Modifier.weight(1f), text = "Prioridad", style = MaterialTheme.typography.bodyLarge)
+        Text(modifier = Modifier.weight(1f), text = "Asunto", style = MaterialTheme.typography.bodyLarge)
+        Text(modifier = Modifier.weight(1f), text = "Cliente", style = MaterialTheme.typography.bodyLarge)
     }
     HorizontalDivider()
 }
 
 @Composable
-private fun TecnicoRow(it: TecnicoEntity) {
+private fun TicketRow(
+    ticket: TicketEntity,
+    goToTicket: (Int) -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
+            .clickable {
+                ticket.ticketId?.let { goToTicket(it)}
+            }
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
-        Text(modifier = Modifier.weight(1f), text = it.tecnicoId.toString())
-        Text(
-            modifier = Modifier.weight(2f),
-            text = it.nombres,
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Text(modifier = Modifier.weight(1f), text = it.sueldo.toString())
+        Text(modifier = Modifier.weight(1f), text = ticket.ticketId.toString())
+        Text(modifier = Modifier.weight(1f), text = ticket.prioridadId.toString())
+        Text(modifier = Modifier.weight(1f), text = ticket.asunto)
+        Text(modifier = Modifier.weight(1f), text = ticket.cliente)
     }
     HorizontalDivider()
 }
