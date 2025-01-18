@@ -16,9 +16,6 @@ import edu.ucne.registrotecnicos.presentation.tecnicos.TecnicoListScreen
 import edu.ucne.registrotecnicos.presentation.tecnicos.TecnicoScreen
 import edu.ucne.registrotecnicos.presentation.tickets.TicketListScreen
 import edu.ucne.registrotecnicos.presentation.tickets.TicketScreen
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun RegistroNavHost(
