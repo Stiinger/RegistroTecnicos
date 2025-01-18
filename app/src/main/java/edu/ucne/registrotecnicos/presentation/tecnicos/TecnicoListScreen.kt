@@ -1,11 +1,6 @@
 package edu.ucne.registrotecnicos.presentation.tecnicos
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +19,7 @@ import edu.ucne.registrotecnicos.data.local.entities.TecnicoEntity
 fun TecnicoListScreen(
     tecnicoList: List<TecnicoEntity>,
     createTecnico: () -> Unit,
+    goToMenu: () -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -46,10 +42,21 @@ fun TecnicoListScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(tecnicoList) {
-                    TecnicoRow(it)
+                item {
+                    TecnicoHeaderRow()
+                }
+                items(tecnicoList) { tecnico ->
+                    TecnicoRow(tecnico)
                 }
             }
+        }
+        OutlinedButton(
+            onClick = { goToMenu() },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+        ) {
+            Text(text = "Menú Principal")
         }
         OutlinedButton(
             onClick = { createTecnico() },
@@ -60,6 +67,20 @@ fun TecnicoListScreen(
             Text(text = "Nuevo Técnico")
         }
     }
+}
+
+@Composable
+private fun TecnicoHeaderRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(modifier = Modifier.weight(1f), text = "ID", style = MaterialTheme.typography.bodyLarge)
+        Text(modifier = Modifier.weight(2f), text = "Nombre", style = MaterialTheme.typography.bodyLarge)
+        Text(modifier = Modifier.weight(1f), text = "Sueldo", style = MaterialTheme.typography.bodyLarge)
+    }
+    HorizontalDivider()
 }
 
 @Composable
