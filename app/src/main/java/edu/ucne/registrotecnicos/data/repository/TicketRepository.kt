@@ -1,25 +1,18 @@
 package edu.ucne.registrotecnicos.data.repository
 
-import edu.ucne.registrotecnicos.data.local.database.RegistroDb
+import edu.ucne.registrotecnicos.data.local.dao.TicketDao
 import edu.ucne.registrotecnicos.data.local.entities.TicketEntity
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class TicketRepository(
-    private val registroDb: RegistroDb
+class TicketRepository @Inject constructor(
+    private val ticketDao: TicketDao
 ) {
-    suspend fun save(ticket: TicketEntity) {
-        registroDb.ticketDao().save(ticket)
-    }
+    suspend fun save(ticket: TicketEntity) = ticketDao.save(ticket)
 
-    suspend fun find(id: Int): TicketEntity? {
-        return registroDb.ticketDao().find(id)
-    }
+    suspend fun find(id: Int) = ticketDao.find(id)
 
-    fun getAll(): Flow<List<TicketEntity>> {
-        return registroDb.ticketDao().getAll()
-    }
+    fun getAll(): Flow<List<TicketEntity>> = ticketDao.getAll()
 
-    suspend fun delete(ticket: TicketEntity) {
-        registroDb.ticketDao().delete(ticket)
-    }
+    suspend fun delete(ticket: TicketEntity) = ticketDao.delete(ticket)
 }

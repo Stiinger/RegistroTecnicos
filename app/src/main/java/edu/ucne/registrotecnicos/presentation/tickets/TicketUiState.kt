@@ -1,12 +1,9 @@
-package edu.ucne.registrotecnicos.data.local.entities
+package edu.ucne.registrotecnicos.presentation.tickets
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import edu.ucne.registrotecnicos.data.local.entities.TicketEntity
 import java.util.Date
 
-@Entity(tableName = "Tickets")
-data class TicketEntity(
-    @PrimaryKey
+data class TicketUiState(
     val ticketId: Int? = null,
     val fecha: Date? = null,
     val prioridadId: Int? = null,
@@ -14,4 +11,6 @@ data class TicketEntity(
     val asunto: String = "",
     val descripcion: String = "",
     val tecnicoId: Int? = null,
+    val errorMessage: String? = null,
+    val tickets: List<TicketEntity> = emptyList()
 )
