@@ -12,51 +12,50 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import edu.ucne.registrotecnicos.data.local.entities.TecnicoEntity
-import edu.ucne.registrotecnicos.data.repository.TecnicoRepository
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.ucne.registrotecnicos.presentation.components.TopBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TecnicoScreen(
-    goBackToList: () -> Unit,
-    tecnicoRepository: TecnicoRepository
+    viewModel: TecnicoViewModel = hiltViewModel(),
+    tecnicoId: Int,
+    goBackToList: () -> Unit
 ) {
-    var nombres by remember { mutableStateOf("") }
-    var sueldo by remember { mutableStateOf("") }
-    var errorMessage: String? by remember { mutableStateOf(null) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    TecnicoBodyScreen(
+        tecnicoId = tecnicoId,
+        viewModel,
+        uiState = uiState,
+        goBackToList
+    )
+}
 
+@Composable
+fun TecnicoBodyScreen(
+    tecnicoId: Int,
+    viewModel: TecnicoViewModel,
+    uiState: TecnicoUiState,
+    goBackToList: () -> Unit,
+){
+    LaunchedEffect(tecnicoId) {
+        if (tecnicoId > 0) viewModel.find(tecnicoId)
+    }
     Scaffold(
         topBar = {
-            androidx.compose.material3.CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Registro de Técnicos",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                colors = androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
+            TopBar(if (tecnicoId > 0) "Editar Técnico" else "Registrar Técnico")
         }
     ) { innerPadding ->
         Column(
@@ -75,18 +74,18 @@ fun TecnicoScreen(
                 ) {
                     OutlinedTextField(
                         label = { Text(text = "Nombres") },
-                        value = nombres,
-                        onValueChange = { nombres = it },
+                        value = uiState.nombres,
+                        onValueChange = viewModel::onNombresChange,
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         label = { Text(text = "Sueldo") },
-                        value = sueldo,
-                        onValueChange = { sueldo = it },
+                        value = uiState.sueldo,
+                        onValueChange = viewModel::onSueldoChange,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.padding(2.dp))
-                    errorMessage?.let {
+                    uiState.errorMessage?.let {
                         Text(text = it, color = Color.Red)
                     }
                     Row(
@@ -104,38 +103,22 @@ fun TecnicoScreen(
                             Text(text = "Atrás")
                         }
                         OutlinedButton(onClick = {
-                            nombres = ""
-                            sueldo = ""
-                            errorMessage = ""
+                            if (tecnicoId > 0){
+                                viewModel.delete()
+                                goBackToList()
+                            }
+                            else
+                                viewModel.new()
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "New button"
+                                contentDescription = if (tecnicoId > 0) "Borrar" else "Limpiar"
                             )
-                            Text(text = "Limpiar")
+                            Text(text = if (tecnicoId > 0) "Borrar" else "Limpiar")
                         }
-                        val scope = rememberCoroutineScope()
                         OutlinedButton(
                             onClick = {
-                                if (nombres.isBlank() || sueldo.isEmpty()) {
-                                    errorMessage = "No se puede guardar con datos vacíos"
-                                    return@OutlinedButton
-                                }
-                                if (sueldo.toDouble() <= 1.0) {
-                                    errorMessage = "El sueldo debe ser mayor que 1.0"
-                                    return@OutlinedButton
-                                }
-                                    scope.launch {
-                                        tecnicoRepository.save(
-                                            TecnicoEntity(
-                                                nombres = nombres,
-                                                sueldo = sueldo.toDouble()
-                                            )
-                                        )
-                                        nombres = ""
-                                        sueldo = ""
-                                        errorMessage = ""
-                                    }
+                                viewModel.save()
                                 goBackToList()
                             }) {
                             Icon(

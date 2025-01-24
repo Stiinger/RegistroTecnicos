@@ -14,7 +14,7 @@ import edu.ucne.registrotecnicos.data.local.entities.TicketEntity
         TecnicoEntity::class,
         TicketEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(DateConverter::class)
