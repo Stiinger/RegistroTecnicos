@@ -48,8 +48,7 @@ class ResponseViewModel @Inject constructor(
 
     fun sendResponse(respuesta: String) {
         viewModelScope.launch {
-            val mensaje = respuesta
-            ticketRepository.addMessageToTicket(uiState.value.ticketId, mensaje)
+            ticketRepository.addMessageToTicket(uiState.value.ticketId, respuesta)
             loadResponses(uiState.value.ticketId)
         }
     }
