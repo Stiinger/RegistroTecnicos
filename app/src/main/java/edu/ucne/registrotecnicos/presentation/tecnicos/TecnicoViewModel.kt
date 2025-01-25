@@ -24,7 +24,7 @@ class TecnicoViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch {
-            if (_uiState.value.nombres.isNotBlank() || _uiState.value.sueldo.toDoubleOrNull() != null) {
+            if (isValid()) {
                 tecnicoRepository.save(_uiState.value.toEntity())
             }
         }
@@ -42,10 +42,14 @@ class TecnicoViewModel @Inject constructor(
 
     fun onSueldoChange(sueldo: String) {
         _uiState.update {
+            val sueldoDouble = sueldo.toDoubleOrNull()
             it.copy(
                 sueldo = sueldo,
-                errorMessage = if (sueldo.toDoubleOrNull() == null) "Sueldo no numérico"
-                else null
+                errorMessage = when {
+                    sueldoDouble == null -> "Sueldo no numérico"
+                    sueldoDouble <= 0 -> "El sueldo debe ser mayor a 0"
+                    else -> null
+                }
             )
         }
     }
@@ -63,7 +67,6 @@ class TecnicoViewModel @Inject constructor(
     private fun getTecnicos() {
         viewModelScope.launch {
             tecnicoRepository.getAll().collect { tecnicos ->
-                println("Técnicos cargados: $tecnicos")
                 _uiState.update {
                     it.copy(tecnicos = tecnicos)
                 }
@@ -86,6 +89,23 @@ class TecnicoViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun isValid(): Boolean {
+        val nombresValid = _uiState.value.nombres.isNotBlank()
+        val sueldoValid = _uiState.value.sueldo.toDoubleOrNull() != null
+
+        _uiState.update {
+            it.copy(
+                errorMessage = when {
+                    !nombresValid -> "Debes rellenar el campo Nombre"
+                    !sueldoValid -> "Debes rellenar el campo Sueldo"
+                    else -> null
+                }
+            )
+        }
+
+        return nombresValid && sueldoValid
     }
 }
 
