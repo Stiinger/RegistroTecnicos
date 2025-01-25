@@ -118,8 +118,10 @@ fun TecnicoBodyScreen(
                         }
                         OutlinedButton(
                             onClick = {
-                                viewModel.save()
-                                goBackToList()
+                                if (viewModel.isValid()) {
+                                    viewModel.save()
+                                    goBackToList()
+                                }
                             }) {
                             Icon(
                                 imageVector = Icons.Default.Check,
