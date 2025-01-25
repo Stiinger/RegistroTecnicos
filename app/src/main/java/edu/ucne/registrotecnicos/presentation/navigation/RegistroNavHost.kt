@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import edu.ucne.registrotecnicos.presentation.home.HomeScreen
+import edu.ucne.registrotecnicos.presentation.responses.ResponseScreen
 import edu.ucne.registrotecnicos.presentation.tecnicos.TecnicoListScreen
 import edu.ucne.registrotecnicos.presentation.tecnicos.TecnicoScreen
 import edu.ucne.registrotecnicos.presentation.tickets.TicketListScreen
@@ -47,12 +48,20 @@ fun RegistroNavHost(
             TicketScreen(
                 ticketId = ticketId,
                 goBackToList = { navHostController.navigateUp() },
+                goToReply = { navHostController.navigate(Screen.TicketResponse(ticketId)) }
             )
         }
         composable<Screen.Home> {
             HomeScreen(
                 goToTickets = { navHostController.navigate(Screen.TicketList) },
                 goToTecnicos = { navHostController.navigate(Screen.TecnicoList) }
+            )
+        }
+        composable<Screen.TicketResponse> {
+            val ticketId = it.toRoute<Screen.Ticket>().ticketId
+            ResponseScreen(
+                ticketId = ticketId,
+                goBackToTicket = { navHostController.navigateUp() }
             )
         }
     }
