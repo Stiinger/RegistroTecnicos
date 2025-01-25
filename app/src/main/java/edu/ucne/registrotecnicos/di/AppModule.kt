@@ -28,4 +28,7 @@ object AppModule {
 
     @Provides
     fun provideTecnicoDao(registroDb: RegistroDb) = registroDb.tecnicoDao()
+
+    @Provides
+    fun provideMensajeDao(registroDb: RegistroDb) = registroDb.mensajeDao()
 }

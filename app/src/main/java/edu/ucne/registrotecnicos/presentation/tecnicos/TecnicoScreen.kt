@@ -20,12 +20,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.ucne.registrotecnicos.presentation.components.ConfirmDeletionDialog
 import edu.ucne.registrotecnicos.presentation.components.TopBar
 
 @Composable
@@ -37,9 +40,9 @@ fun TecnicoScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TecnicoBodyScreen(
         tecnicoId = tecnicoId,
-        viewModel,
+        viewModel = viewModel,
         uiState = uiState,
-        goBackToList
+        goBackToList = goBackToList
     )
 }
 
@@ -48,11 +51,12 @@ fun TecnicoBodyScreen(
     tecnicoId: Int,
     viewModel: TecnicoViewModel,
     uiState: TecnicoUiState,
-    goBackToList: () -> Unit,
-){
+    goBackToList: () -> Unit
+) {
     LaunchedEffect(tecnicoId) {
         if (tecnicoId > 0) viewModel.find(tecnicoId)
     }
+    val openDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(if (tecnicoId > 0) "Editar Técnico" else "Registrar Técnico")
@@ -93,9 +97,7 @@ fun TecnicoBodyScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedButton(onClick = {
-                            goBackToList()
-                        }) {
+                        OutlinedButton(onClick = { goBackToList() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Go back"
@@ -103,12 +105,11 @@ fun TecnicoBodyScreen(
                             Text(text = "Atrás")
                         }
                         OutlinedButton(onClick = {
-                            if (tecnicoId > 0){
-                                viewModel.delete()
-                                goBackToList()
-                            }
-                            else
+                            if (tecnicoId > 0) {
+                                openDialog.value = true
+                            } else {
                                 viewModel.new()
+                            }
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -118,8 +119,10 @@ fun TecnicoBodyScreen(
                         }
                         OutlinedButton(
                             onClick = {
-                                viewModel.save()
-                                goBackToList()
+                                if (viewModel.isValid()) {
+                                    viewModel.save()
+                                    goBackToList()
+                                }
                             }) {
                             Icon(
                                 imageVector = Icons.Default.Check,
@@ -132,4 +135,14 @@ fun TecnicoBodyScreen(
             }
         }
     }
+    ConfirmDeletionDialog(
+        openDialog = openDialog,
+        onConfirm = {
+            viewModel.delete()
+            goBackToList()
+        },
+        onDismiss = {
+            openDialog.value = false
+        }
+    )
 }

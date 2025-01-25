@@ -7,7 +7,6 @@ import edu.ucne.registrotecnicos.data.local.entities.TecnicoEntity
 import edu.ucne.registrotecnicos.data.local.entities.TicketEntity
 import edu.ucne.registrotecnicos.data.repository.TecnicoRepository
 import edu.ucne.registrotecnicos.data.repository.TicketRepository
-import edu.ucne.registrotecnicos.presentation.tecnicos.toEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -34,19 +33,8 @@ class TicketViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch {
-            val state = uiState.value
-            if (state.asunto.isNotBlank() &&
-                state.descripcion.isNotBlank() &&
-                state.prioridadId != null &&
-                state.cliente.isNotBlank() &&
-                state.tecnicoId != null &&
-                state.fecha != null
-            ) {
-                ticketRepository.save(state.toEntity())
-            } else {
-                _uiState.update {
-                    it.copy(errorMessage = "Debes rellenar todos los campos.")
-                }
+            if (isValid()) {
+                ticketRepository.save(_uiState.value.toEntity())
             }
         }
     }
@@ -86,7 +74,8 @@ class TicketViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 fecha = dateFormatter.parse(fecha),
-                errorMessage = if (fecha.isBlank()) "Debes rellenar el campo Fecha" else null
+                errorMessage = if (fecha.isBlank()) "Debes rellenar el campo Fecha"
+                else null
             )
         }
     }
@@ -146,18 +135,43 @@ class TicketViewModel @Inject constructor(
                 if (ticket != null) {
                     _uiState.update {
                         it.copy(
-                            tecnicoId = ticket.tecnicoId,
+                            ticketId = ticket.ticketId,
                             fecha = ticket.fecha,
                             cliente = ticket.cliente,
                             asunto = ticket.asunto,
                             descripcion = ticket.descripcion,
                             prioridadId = ticket.prioridadId,
-                            ticketId = ticket.ticketId
+                            tecnicoId = ticket.tecnicoId
                         )
                     }
                 }
             }
         }
+    }
+
+    fun isValid(): Boolean {
+        val asuntoValid = _uiState.value.asunto.isNotBlank()
+        val descripcionValid = _uiState.value.descripcion.isNotBlank()
+        val prioridadValid = _uiState.value.prioridadId != null
+        val clienteValid = _uiState.value.cliente.isNotBlank()
+        val tecnicoValid = _uiState.value.tecnicoId != null
+        val fechaValid = _uiState.value.fecha != null
+
+        _uiState.update {
+            it.copy(
+                errorMessage = when {
+                    !asuntoValid -> "Debes rellenar el campo Asunto"
+                    !descripcionValid -> "Debes rellenar el campo Descripción"
+                    !prioridadValid -> "Debes seleccionar una Prioridad"
+                    !clienteValid -> "Debes rellenar el campo Cliente"
+                    !tecnicoValid -> "Debes seleccionar un Técnico"
+                    !fechaValid -> "Debes seleccionar una Fecha"
+                    else -> null
+                }
+            )
+        }
+
+        return asuntoValid && descripcionValid && prioridadValid && clienteValid && tecnicoValid && fechaValid
     }
 }
 

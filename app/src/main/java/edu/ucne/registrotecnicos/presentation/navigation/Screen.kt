@@ -4,14 +4,15 @@ import kotlinx.serialization.Serializable
 
 sealed class Screen {
     @Serializable
-    data object TecnicoList : Screen() // Consulta
+    data object TecnicoList : Screen()
     @Serializable
-    data class Tecnico(val tecnicoId: Int) : Screen() // Registro
-
+    data class Tecnico(val tecnicoId: Int) : Screen()
     @Serializable
-    data object TicketList : Screen() // Consulta
+    data object TicketList : Screen()
     @Serializable
-    data class Ticket(val ticketId: Int) : Screen() // Registro
+    data class Ticket(val ticketId: Int) : Screen()
     @Serializable
     data object Home : Screen()
+    @Serializable
+    data class TicketResponse(val ticketId: Int) : Screen()
 }
