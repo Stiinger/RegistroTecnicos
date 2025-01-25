@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -47,14 +48,18 @@ import java.util.Locale
 fun TicketScreen(
     viewModel: TicketViewModel = hiltViewModel(),
     ticketId: Int,
-    goBackToList: () -> Unit
+    goBackToList: () -> Unit,
+    goToReply: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val tecnicosList by viewModel.tecnicosList.collectAsStateWithLifecycle()
     TicketBodyScreen(
         ticketId = ticketId,
         viewModel,
         uiState = uiState,
-        goBackToList
+        tecnicosList = tecnicosList,
+        goBackToList,
+        goToReply
     )
 }
 
@@ -64,11 +69,14 @@ fun TicketBodyScreen(
     ticketId: Int,
     viewModel: TicketViewModel,
     uiState: TicketUiState,
-    goBackToList: () -> Unit
+    tecnicosList: List<TecnicoEntity>,
+    goBackToList: () -> Unit,
+    goToReply: () -> Unit
 ) {
     LaunchedEffect(ticketId) {
-        if (ticketId > 0)
+        if (ticketId > 0) {
             viewModel.find(ticketId)
+        }
     }
     Scaffold(
         topBar = {
@@ -179,7 +187,10 @@ fun TicketBodyScreen(
                     )
                     var tecnicoSeleccionado by remember { mutableStateOf<TecnicoEntity?>(null) }
                     var expandedTecnico by remember { mutableStateOf(false) }
-                    val tecnicosList by viewModel.tecnicosList.collectAsStateWithLifecycle()
+                    LaunchedEffect(uiState.tecnicoId) {
+                        val tecnico = tecnicosList.find { it.tecnicoId == uiState.tecnicoId }
+                        tecnicoSeleccionado = tecnico
+                    }
                     ExposedDropdownMenuBox(
                         expanded = expandedTecnico,
                         onExpandedChange = { expandedTecnico = !expandedTecnico }
@@ -189,7 +200,7 @@ fun TicketBodyScreen(
                                 .menuAnchor()
                                 .fillMaxWidth(),
                             readOnly = true,
-                            value = tecnicoSeleccionado?.nombres ?: "",
+                            value = tecnicoSeleccionado?.nombres ?: "Seleccionar Técnico",
                             onValueChange = {},
                             label = { Text("Técnico") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTecnico) }
@@ -242,14 +253,42 @@ fun TicketBodyScreen(
                     }
                     OutlinedButton(
                         onClick = {
-                            viewModel.save()
-                            goBackToList()
+                            if (viewModel.isValid()) {
+                                viewModel.save()
+                                goBackToList()
+                            }
                         }) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Save button"
                         )
                         Text(text = "Guardar")
+                    }
+                }
+                if(ticketId > 0)
+                {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                goToReply()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(0.6f)
+                                .height(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Reply button"
+                            )
+                            Text(
+                                text = "Responder Ticket",
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
                 }
             }
