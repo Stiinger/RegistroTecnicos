@@ -11,14 +11,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.ucne.registrotecnicos.presentation.components.ConfirmDeletionDialog
 import edu.ucne.registrotecnicos.presentation.components.TopBar
 
 @Composable
@@ -41,9 +40,9 @@ fun TecnicoScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TecnicoBodyScreen(
         tecnicoId = tecnicoId,
-        viewModel,
+        viewModel = viewModel,
         uiState = uiState,
-        goBackToList
+        goBackToList = goBackToList
     )
 }
 
@@ -52,8 +51,8 @@ fun TecnicoBodyScreen(
     tecnicoId: Int,
     viewModel: TecnicoViewModel,
     uiState: TecnicoUiState,
-    goBackToList: () -> Unit,
-){
+    goBackToList: () -> Unit
+) {
     LaunchedEffect(tecnicoId) {
         if (tecnicoId > 0) viewModel.find(tecnicoId)
     }
@@ -98,9 +97,7 @@ fun TecnicoBodyScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedButton(onClick = {
-                            goBackToList()
-                        }) {
+                        OutlinedButton(onClick = { goBackToList() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Go back"
@@ -138,36 +135,14 @@ fun TecnicoBodyScreen(
             }
         }
     }
-    if (openDialog.value) {
-        AlertDialog(
-            onDismissRequest = { openDialog.value = false },
-            icon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-            title = { Text(text = "Confirmar eliminación") },
-            text = {
-                Column {
-                    Text("¿Quieres eliminar este técnico?")
-                    Text(
-                        "Esta acción no se puede deshacer.",
-                        color = Color.Red
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.delete()
-                        openDialog.value = false
-                        goBackToList()
-                    }
-                ) {
-                    Text("Confirmar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { openDialog.value = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
+    ConfirmDeletionDialog(
+        openDialog = openDialog,
+        onConfirm = {
+            viewModel.delete()
+            goBackToList()
+        },
+        onDismiss = {
+            openDialog.value = false
+        }
+    )
 }
