@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -25,6 +27,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,6 +81,9 @@ fun TicketBodyScreen(
             viewModel.find(ticketId)
         }
     }
+
+    val openDialog = remember { mutableStateOf(false) } // State to control the dialog visibility
+
     Scaffold(
         topBar = {
             TopBar(if (ticketId > 0) "Editar Ticket" else "Registrar Ticket")
@@ -239,11 +245,12 @@ fun TicketBodyScreen(
                         Text(text = "Atrás")
                     }
                     OutlinedButton(onClick = {
-                        if (ticketId > 0)
-                            viewModel.delete()
-                        else
+                        if (ticketId > 0) {
+                            openDialog.value = true
+                        } else {
                             viewModel.new()
-                        goBackToList()
+                            goBackToList()
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -265,8 +272,39 @@ fun TicketBodyScreen(
                         Text(text = "Guardar")
                     }
                 }
-                if(ticketId > 0)
-                {
+                if (openDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { openDialog.value = false },
+                        icon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                        title = { Text(text = "Confirmar eliminación") },
+                        text = {
+                            Column {
+                                Text("¿Quieres eliminar este ticket?")
+                                Text(
+                                    "Esta acción no se puede deshacer.",
+                                    color = Color.Red
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    viewModel.delete()
+                                    openDialog.value = false
+                                    goBackToList()
+                                }
+                            ) {
+                                Text("Confirmar")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { openDialog.value = false }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+                if (ticketId > 0) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Column(
                         modifier = Modifier.fillMaxWidth(),
