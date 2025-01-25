@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -30,10 +31,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -148,75 +149,85 @@ fun ResponseBodyScreen(
                     }
                 }
             }
+            var showResponseForm by rememberSaveable { mutableStateOf(false) }
             Spacer(modifier = Modifier.height(8.dp))
-            ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.Gray, shape = MaterialTheme.shapes.medium),
-                elevation = CardDefaults.elevatedCardElevation(4.dp)
+            OutlinedButton(
+                onClick = { showResponseForm = !showResponseForm },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Text(if(showResponseForm) "Ocultar Formulario" else "Responder Ticket")
+            }
+            if (showResponseForm) {
+                Spacer(modifier = Modifier.height(8.dp))
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.Gray, shape = MaterialTheme.shapes.medium),
+                    elevation = CardDefaults.elevatedCardElevation(4.dp)
                 ) {
-                    Text(
-                        text = "Responder",
-                        style = TextStyle(
-                            color = Color.Gray,
-                            fontSize = 18.sp
-                        ),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    OutlinedTextField(
-                        value = uiState.nombreTecnico,
-                        onValueChange = {},
-                        label = { Text("Técnico") },
-                        readOnly = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                    )
-                    var respuesta by remember { mutableStateOf(TextFieldValue("")) }
-                    OutlinedTextField(
-                        value = respuesta,
-                        onValueChange = { respuesta = it },
-                        label = { Text("Escribe tu respuesta aquí...") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                            .heightIn(min = 100.dp),
-                        maxLines = 5,
-                        singleLine = false
-                    )
-                    Text(
-                        text = "Words: ${respuesta.text.split("\\s+".toRegex()).size}", // contar palabras
-                        style = TextStyle(color = Color.Gray),
-                        modifier = Modifier.align(Alignment.End)
-                    )
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        OutlinedButton(onClick = { goBackToTicket() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Atrás"
-                            )
-                            Text(text = "Atrás")
-                        }
-                        OutlinedButton(onClick = {
-                            if (respuesta.text.isNotBlank()) {
-                                viewModel.sendResponse(respuesta.text)
-                                respuesta = TextFieldValue("")
+                        Text(
+                            text = "Responder",
+                            style = TextStyle(
+                                color = Color.Gray,
+                                fontSize = 18.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        OutlinedTextField(
+                            value = uiState.nombreTecnico,
+                            onValueChange = {},
+                            label = { Text("Técnico") },
+                            readOnly = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                        var respuesta by remember { mutableStateOf(TextFieldValue("")) }
+                        OutlinedTextField(
+                            value = respuesta,
+                            onValueChange = { respuesta = it },
+                            label = { Text("Escribe tu respuesta aquí...") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                                .heightIn(min = 100.dp),
+                            maxLines = 5,
+                            singleLine = false
+                        )
+                        Text(
+                            text = "Words: ${respuesta.text.split("\\s+".toRegex()).size}", // contar palabras
+                            style = TextStyle(color = Color.Gray),
+                            modifier = Modifier.align(Alignment.End)
+                        )
+                        Spacer(modifier = Modifier.padding(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(onClick = { goBackToTicket() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Atrás"
+                                )
+                                Text(text = "Atrás")
                             }
-                        }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Enviar"
-                            )
-                            Text(text = "Enviar")
+                            OutlinedButton(onClick = {
+                                if (respuesta.text.isNotBlank()) {
+                                    viewModel.sendResponse(respuesta.text)
+                                    respuesta = TextFieldValue("")
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = "Enviar"
+                                )
+                                Text(text = "Enviar")
+                            }
                         }
                     }
                 }
