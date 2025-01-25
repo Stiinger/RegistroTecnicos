@@ -11,15 +11,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,6 +57,7 @@ fun TecnicoBodyScreen(
     LaunchedEffect(tecnicoId) {
         if (tecnicoId > 0) viewModel.find(tecnicoId)
     }
+    val openDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(if (tecnicoId > 0) "Editar Técnico" else "Registrar Técnico")
@@ -103,12 +108,11 @@ fun TecnicoBodyScreen(
                             Text(text = "Atrás")
                         }
                         OutlinedButton(onClick = {
-                            if (tecnicoId > 0){
-                                viewModel.delete()
-                                goBackToList()
-                            }
-                            else
+                            if (tecnicoId > 0) {
+                                openDialog.value = true
+                            } else {
                                 viewModel.new()
+                            }
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -133,5 +137,37 @@ fun TecnicoBodyScreen(
                 }
             }
         }
+    }
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = { openDialog.value = false },
+            icon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+            title = { Text(text = "Confirmar eliminación") },
+            text = {
+                Column {
+                    Text("¿Quieres eliminar este técnico?")
+                    Text(
+                        "Esta acción no se puede deshacer.",
+                        color = Color.Red
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.delete()
+                        openDialog.value = false
+                        goBackToList()
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { openDialog.value = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
