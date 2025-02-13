@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import edu.ucne.registrotecnicos.presentation.home.HomeScreen
+import edu.ucne.registrotecnicos.presentation.prioridades.PrioridadListScreen
+import edu.ucne.registrotecnicos.presentation.prioridades.PrioridadScreen
 import edu.ucne.registrotecnicos.presentation.responses.ResponseScreen
 import edu.ucne.registrotecnicos.presentation.tecnicos.TecnicoListScreen
 import edu.ucne.registrotecnicos.presentation.tecnicos.TecnicoScreen
@@ -54,7 +56,8 @@ fun RegistroNavHost(
         composable<Screen.Home> {
             HomeScreen(
                 goToTickets = { navHostController.navigate(Screen.TicketList) },
-                goToTecnicos = { navHostController.navigate(Screen.TecnicoList) }
+                goToTecnicos = { navHostController.navigate(Screen.TecnicoList) },
+                goToPrioridades = { navHostController.navigate(Screen.PrioridadList) }
             )
         }
         composable<Screen.TicketResponse> {
@@ -62,6 +65,20 @@ fun RegistroNavHost(
             ResponseScreen(
                 ticketId = ticketId,
                 goBackToTicket = { navHostController.navigateUp() }
+            )
+        }
+        composable<Screen.PrioridadList> {
+            PrioridadListScreen(
+                createPrioridad = { navHostController.navigate(Screen.Prioridad(0)) },
+                goToMenu = { navHostController.navigateUp() },
+                goToPrioridad = { navHostController.navigate(Screen.Prioridad(it)) }
+            )
+        }
+        composable<Screen.Prioridad> {
+            val prioridadId = it.toRoute<Screen.Prioridad>().prioridadId
+            PrioridadScreen(
+                prioridadId = prioridadId,
+                goBackToList = { navHostController.navigateUp() }
             )
         }
     }
