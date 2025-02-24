@@ -1,30 +1,45 @@
 package edu.ucne.registrotecnicos.data.repository
 
 import android.util.Log
+import edu.ucne.registrotecnicos.data.local.dao.PrioridadDao
+import edu.ucne.registrotecnicos.data.local.entities.PrioridadEntity
 import edu.ucne.registrotecnicos.data.remote.RemoteDataSource
 import edu.ucne.registrotecnicos.data.remote.Resource
 import edu.ucne.registrotecnicos.data.remote.dto.PrioridadDto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import javax.inject.Inject
 
 class PrioridadRepository @Inject constructor(
+    private val prioridadDao: PrioridadDao,
     private val remoteDataSource: RemoteDataSource,
 ) {
-    fun getPrioridades(): Flow<Resource<List<PrioridadDto>>> = flow {
+    fun getPrioridades(): Flow<Resource<List<PrioridadEntity>>> = flow {
+        emit(Resource.Loading())
         try {
-            emit(Resource.Loading())
-            val clientes = remoteDataSource.getPrioridades()
-            emit(Resource.Success(clientes))
+            val prioridadRemoto = remoteDataSource.getPrioridades()
+
+            val listaPrioridades = prioridadRemoto.map { dto ->
+                PrioridadEntity(
+                    prioridadId = dto.prioridadId,
+                    descripcion = dto.descripcion,
+                    diasCompromiso = dto.diasCompromiso
+                )
+            }
+            prioridadDao.save(listaPrioridades)
+            emit(Resource.Success(listaPrioridades))
         } catch (e: HttpException) {
             val errorMessage = e.response()?.errorBody()?.string() ?: e.message()
-            Log.e("PrioridadRepository", "HttpException: $errorMessage")
-            emit(Resource.Error("Error de conexion $errorMessage"))
+            emit(Resource.Error("Error de conexión $errorMessage"))
         } catch (e: Exception) {
+            val localPrioridades = prioridadDao.getAll().first()
 
-            Log.e("PrioridadRepository", "Exception: ${e.message}")
-            emit(Resource.Error("Error: ${e.message}"))
+            if (localPrioridades.isNotEmpty())
+                emit(Resource.Success(localPrioridades))
+            else
+                emit(Resource.Error("Error de conexión: ${e.message}"))
         }
     }
 
