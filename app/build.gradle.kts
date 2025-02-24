@@ -74,6 +74,14 @@ dependencies {
     implementation(libs.converter.moshi)
     implementation(libs.logging.interceptor)
 
+    // Mockk / Testing
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test.v173)
+    testImplementation(libs.truth)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.robolectric)
+
     implementation(libs.androidx.material.icons.extended)
 
     implementation(libs.androidx.core.ktx)
