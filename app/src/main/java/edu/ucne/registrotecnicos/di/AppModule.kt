@@ -31,4 +31,7 @@ object AppModule {
 
     @Provides
     fun provideMensajeDao(registroDb: RegistroDb) = registroDb.mensajeDao()
+
+    @Provides
+    fun providePrioridadDao(registroDb: RegistroDb) = registroDb.prioridadDao()
 }
