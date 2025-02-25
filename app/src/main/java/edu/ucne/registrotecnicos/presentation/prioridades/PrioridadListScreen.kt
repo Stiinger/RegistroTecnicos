@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.ucne.registrotecnicos.data.local.entities.PrioridadEntity
 import edu.ucne.registrotecnicos.data.remote.dto.PrioridadDto
 import edu.ucne.registrotecnicos.presentation.components.TopBar
 
@@ -127,7 +128,7 @@ private fun PrioridadHeaderRow() {
 
 @Composable
 private fun PrioridadRow(
-    it: PrioridadDto,
+    it: PrioridadEntity,
     goToPrioridad: (Int) -> Unit
 ) {
     Card(
